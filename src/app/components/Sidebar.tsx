@@ -1,11 +1,11 @@
-import { X, Bell, MessageCircle } from "lucide-react";
+import { X, Bell, MessageCircle, Lightbulb } from "lucide-react";
 
 type Language = "ko" | "en" | "ja";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (page: "main" | "mypage" | "notice" | "community") => void;
+  onNavigate: (page: "main" | "mypage" | "notice" | "community" | "tips") => void;
   language: Language;
 }
 
@@ -14,6 +14,7 @@ const translations = {
     menu: "메뉴",
     notice: "📢 공지사항",
     community: "💬 커뮤니티",
+    tips: "💡 분리수거 꿀팁",
     version: "배출의 민족 v1.0",
     copyright: "© 2026 All rights reserved"
   },
@@ -21,6 +22,7 @@ const translations = {
     menu: "Menu",
     notice: "📢 Notice",
     community: "💬 Community",
+    tips: "💡 Recycling Tips",
     version: "Disposal Nation v1.0",
     copyright: "© 2026 All rights reserved"
   },
@@ -28,6 +30,7 @@ const translations = {
     menu: "メニュー",
     notice: "📢 お知らせ",
     community: "💬 コミュニティ",
+    tips: "💡 分別のコツ",
     version: "排出の民族 v1.0",
     copyright: "© 2026 All rights reserved"
   }
@@ -96,6 +99,15 @@ export function Sidebar({ isOpen, onClose, onNavigate, language }: SidebarProps)
                 <MessageCircle className="w-6 h-6" />
               </div>
               <span className="text-lg font-bold">{t.community}</span>
+            </button>
+            <button
+              onClick={() => onNavigate("tips")}
+              className="w-full flex items-center gap-4 p-5 rounded-3xl bg-white/10 hover:bg-white/25 transition-all hover:scale-105 hover:-translate-y-1 backdrop-blur-sm border border-white/20 shadow-lg group"
+            >
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Lightbulb className="w-6 h-6" />
+              </div>
+              <span className="text-lg font-bold">{t.tips}</span>
             </button>
           </nav>
 

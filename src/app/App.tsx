@@ -5,9 +5,10 @@ import { MyPage } from "./components/MyPage";
 import { AnalysisResult } from "./components/AnalysisResult";
 import { NoticePage } from "./components/NoticePage";
 import { CommunityPage } from "./components/CommunityPage";
+import { TipsPage } from "./components/TipsPage";
 import { AuthPage } from "./components/AuthPage";
 
-type Page = "main" | "mypage" | "notice" | "community" | "auth";
+type Page = "main" | "mypage" | "notice" | "community" | "tips" | "auth";
 type Language = "ko" | "en" | "ja";
 
 interface RecentItem {
@@ -207,6 +208,8 @@ export default function App() {
         return <NoticePage language={language} onBack={() => setCurrentPage("main")} />;
       case "community":
         return <CommunityPage language={language} onBack={() => setCurrentPage("main")} />;
+      case "tips":
+        return <TipsPage language={language} onBack={() => setCurrentPage("main")} />;
       default:
         if (analysisImage) {
           return (
