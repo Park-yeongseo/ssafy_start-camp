@@ -7,6 +7,7 @@ interface AnalysisResultProps {
   image: string;
   language: Language;
   userRegion: string;
+  wasteType: string;
   onBack: () => void;
   onComplete: () => void;
 }
@@ -48,77 +49,188 @@ const translations = {
     category: "分類カテゴリー",
     yourRegion: "📍 設定地域",
     howToDispose: "♻️ 分別ガイド",
-    tips: "💡 スマート排出のコツ",
+    tips: "💡 スマート排出ヒント",
     retake: "再撮影",
-    complete: "完了",
+    complete: "排出完了",
     completeMessage: "排出完了！地球を守ってくれてありがとうございます 🌍💚",
     noRegion: "地域未設定"
   }
 };
 
-// Mock AI analysis data
-const analysisData = {
-  ko: {
-    item: "플라스틱 페트병",
-    category: "플라스틱류",
-    confidence: 95,
-    steps: [
-      "내용물을 완전히 비웁니다",
-      "라벨을 제거합니다 (비닐류로 따로 배출)",
-      "물로 헹구어 이물질을 제거합니다",
-      "뚜껑을 분리합니다 (플라스틱 뚜껑도 플라스틱으로 배출)",
-      "압축하여 부피를 줄입니다",
-      "투명 페트병 전용 수거함에 배출합니다"
-    ],
-    tips: [
-      "투명 페트병은 일반 플라스틱과 별도로 배출해야 재활용률이 높아집니다",
-      "라벨이 붙은 채로 배출하면 재활용이 어렵습니다",
-      "음료가 남아있으면 악취와 오염의 원인이 됩니다"
-    ]
-  },
-  en: {
-    item: "Plastic PET Bottle",
-    category: "Plastics",
-    confidence: 95,
-    steps: [
-      "Empty all contents completely",
-      "Remove the label (dispose separately as vinyl)",
-      "Rinse with water to remove residue",
-      "Separate the cap (recycle as plastic)",
-      "Compress to reduce volume",
-      "Dispose in transparent PET bottle bin"
-    ],
-    tips: [
-      "Transparent PET bottles should be separated from regular plastics for better recycling",
-      "Labels make recycling difficult if not removed",
-      "Remaining liquid causes odor and contamination"
-    ]
-  },
-  ja: {
-    item: "プラスチックペットボトル",
-    category: "プラスチック類",
-    confidence: 95,
-    steps: [
-      "中身を完全に空にします",
-      "ラベルを剥がします（ビニール類として別途排出）",
-      "水で洗って異物を除去します",
-      "キャップを分리します（プラスチックキャップもプラスチックとして排出）",
-      "圧縮して体積を減らします",
-      "透明ペットボトル専用回収箱に排出します"
-    ],
-    tips: [
-      "透明ペットボトルは一般プラスチックと別に排出するとリサイクル率が上がります",
-      "ラベルが付いたまま排出するとリサイクルが難しくなります",
-      "飲料が残っていると悪臭と汚染の原因になります"
-    ]
-  }
-};
+// Mock AI analysis data by waste type
+const getAnalysisData = (wasteType: string, language: Language) => {
+  const data = {
+    'plastic-bottle': {
+      ko: {
+        item: "플라스틱 페트병",
+        category: "플라스틱류",
+        confidence: 95,
+        steps: [
+          "내용물을 완전히 비웁니다",
+          "라벨을 제거합니다 (비닐류로 따로 배출)",
+          "물로 헹구어 이물질을 제거합니다",
+          "뚜껑을 분리합니다 (플라스틱 뚜껑도 플라스틱으로 배출)",
+          "압축하여 부피를 줄입니다",
+          "투명 페트병 전용 수거함에 배출합니다"
+        ],
+        tips: [
+          "투명 페트병은 일반 플라스틱과 별도로 배출해야 재활용률이 높아집니다",
+          "라벨이 붙은 채로 배출하면 재활용이 어렵습니다",
+          "음료가 남아있으면 악취와 오염의 원인이 됩니다"
+        ]
+      },
+      en: {
+        item: "Plastic PET Bottle",
+        category: "Plastics",
+        confidence: 95,
+        steps: [
+          "Empty all contents completely",
+          "Remove the label (dispose separately as vinyl)",
+          "Rinse with water to remove residue",
+          "Separate the cap (recycle as plastic)",
+          "Compress to reduce volume",
+          "Dispose in transparent PET bottle bin"
+        ],
+        tips: [
+          "Transparent PET bottles should be separated from regular plastics for better recycling",
+          "Labels make recycling difficult if not removed",
+          "Remaining liquid causes odor and contamination"
+        ]
+      },
+      ja: {
+        item: "プラスチックペットボトル",
+        category: "プラスチック類",
+        confidence: 95,
+        steps: [
+          "中身を完全に空にします",
+          "ラベルを剥がします（ビニール類として別途排出）",
+          "水で洗って異物を除去します",
+          "キャップを分離します（プラスチックキャップもプラスチックとして排出）",
+          "圧縮して体積を減らします",
+          "透明ペットボトル専用回収箱に排出します"
+        ],
+        tips: [
+          "透明ペットボトルは一般プラスチックと別に排出するとリサイクル率が上がります",
+          "ラベルが付いたまま排出するとリサイクルが難しくなります",
+          "飲料が残っていると悪臭と汚染の原因になります"
+        ]
+      }
+    },
+    'food-waste': {
+      ko: {
+        item: "음식물 쓰레기",
+        category: "음식물류",
+        confidence: 92,
+        steps: [
+          "물기를 최대한 제거합니다",
+          "딱딱한 뼈, 껍질, 씨앗 등은 제거합니다",
+          "비닐봉지나 이물질을 완전히 제거합니다",
+          "음식물 전용 수거용기에 담습니다",
+          "지정된 음식물 쓰레기 배출구에 버립니다"
+        ],
+        tips: [
+          "물기가 많으면 악취와 해충 발생의 원인이 됩니다",
+          "호두, 밤 등의 딱딱한 껍질은 일반쓰레기로 배출하세요",
+          "양파·마늘 껍질, 옥수수대 등 섬유질이 많은 것은 일반쓰레기입니다"
+        ]
+      },
+      en: {
+        item: "Food Waste",
+        category: "Food",
+        confidence: 92,
+        steps: [
+          "Remove excess moisture",
+          "Remove hard bones, shells, and seeds",
+          "Remove all plastic bags and foreign objects",
+          "Place in designated food waste container",
+          "Dispose at designated food waste collection point"
+        ],
+        tips: [
+          "Excess moisture causes odor and pest problems",
+          "Hard shells like walnuts and chestnuts go to general waste",
+          "High-fiber items like onion peels and corn stalks are general waste"
+        ]
+      },
+      ja: {
+        item: "生ゴミ",
+        category: "生ゴミ類",
+        confidence: 92,
+        steps: [
+          "水気を最大限除去します",
+          "硬い骨、殻、種などを取り除きます",
+          "ビニール袋や異物を完全に除去します",
+          "生ゴミ専用回収容器に入れます",
+          "指定された生ゴミ排出口に捨てます"
+        ],
+        tips: [
+          "水気が多いと悪臭と害虫発生の原因になります",
+          "クルミ、栗などの硬い殻は一般ゴミとして排出してください",
+          "玉ねぎ・にんにくの皮、とうもろこしの茎など繊維質が多いものは一般ゴミです"
+        ]
+      }
+    },
+    'general-waste': {
+      ko: {
+        item: "일반 쓰레기",
+        category: "일반쓰레기",
+        confidence: 88,
+        steps: [
+          "재활용이 불가능한 것인지 확인합니다",
+          "날카로운 것은 신문지나 종이로 감쌉니다",
+          "종량제 봉투에 담습니다",
+          "지정된 배출 시간과 장소를 확인합니다",
+          "종량제 봉투를 배출합니다"
+        ],
+        tips: [
+          "재활용 가능한 것을 일반쓰레기로 버리면 환경오염이 심해집니다",
+          "깨진 유리나 도자기는 신문지로 싸서 '위험' 표시를 해주세요",
+          "비닐이나 플라스틱이 섞인 종이는 재활용이 안 되어 일반쓰레기입니다"
+        ]
+      },
+      en: {
+        item: "General Waste",
+        category: "General",
+        confidence: 88,
+        steps: [
+          "Confirm item is not recyclable",
+          "Wrap sharp objects in newspaper or paper",
+          "Place in designated waste bag",
+          "Check designated disposal time and location",
+          "Dispose waste bag"
+        ],
+        tips: [
+          "Disposing recyclables as general waste increases environmental pollution",
+          "Wrap broken glass or ceramics in newspaper and mark 'Danger'",
+          "Paper mixed with vinyl or plastic cannot be recycled and is general waste"
+        ]
+      },
+      ja: {
+        item: "一般ゴミ",
+        category: "一般ゴミ",
+        confidence: 88,
+        steps: [
+          "リサイクル不可能なものか確認します",
+          "鋭利なものは新聞紙や紙で包みます",
+          "指定ゴミ袋に入れます",
+          "指定された排出時間と場所を確認します",
+          "ゴミ袋を排出します"
+        ],
+        tips: [
+          "リサイクル可能なものを一般ゴミとして捨てると環境汚染が深刻化します",
+          "割れたガラスや陶器は新聞紙で包んで「危険」表示をしてください",
+          "ビニールやプラスチックが混ざった紙はリサイクルできず一般ゴミです"
+        ]
+      }
+    }
+  };
 
-export function AnalysisResult({ image, language, userRegion, onBack, onComplete }: AnalysisResultProps) {
+  return data[wasteType as keyof typeof data]?.[language] || data['plastic-bottle'][language];
+};
+export function AnalysisResult({ image, language, userRegion, wasteType, onBack, onComplete }: AnalysisResultProps) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
   const t = translations[language];
-  const data = analysisData[language];
+  const data = getAnalysisData(wasteType, language);
 
   // Initialize completedSteps array when component mounts
   if (completedSteps.length === 0) {

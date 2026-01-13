@@ -63,6 +63,7 @@ export default function App() {
   const [language, setLanguage] = useState<Language>("ko");
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [analysisImage, setAnalysisImage] = useState<string | null>(null);
+  const [wasteType, setWasteType] = useState<string>("plastic-bottle");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userRegion, setUserRegion] = useState("강남구");
@@ -72,19 +73,81 @@ export default function App() {
 
   const t = translations[language];
 
+  const detectWasteType = (fileName: string): string => {
+    const lowerFileName = fileName.toLowerCase();
+
+    if (lowerFileName.includes('plastic') || lowerFileName.includes('bottle') ||
+        lowerFileName.includes('페트') || lowerFileName.includes('플라스틱')) {
+      return 'plastic-bottle';
+    } else if (lowerFileName.includes('food') || lowerFileName.includes('음식') ||
+               lowerFileName.includes('푸드')) {
+      return 'food-waste';
+    } else if (lowerFileName.includes('general') || lowerFileName.includes('일반') ||
+               lowerFileName.includes('쓰레기')) {
+      return 'general-waste';
+    }
+
+    return 'plastic-bottle'; // default
+  };
+
+  const getItemName = (type: string) => {
+    const items = {
+      'plastic-bottle': {
+        ko: '플라스틱 페트병',
+        en: 'Plastic PET Bottle',
+        ja: 'プラスチックペットボトル'
+      },
+      'food-waste': {
+        ko: '음식물 쓰레기',
+        en: 'Food Waste',
+        ja: '生ゴミ'
+      },
+      'general-waste': {
+        ko: '일반 쓰레기',
+        en: 'General Waste',
+        ja: '一般ゴミ'
+      }
+    };
+    return items[type as keyof typeof items]?.[language] || items['plastic-bottle'][language];
+  };
+
+  const getCategoryName = (type: string) => {
+    const categories = {
+      'plastic-bottle': {
+        ko: '플라스틱류',
+        en: 'Plastics',
+        ja: 'プラスチック類'
+      },
+      'food-waste': {
+        ko: '음식물류',
+        en: 'Food',
+        ja: '生ゴミ類'
+      },
+      'general-waste': {
+        ko: '일반쓰레기',
+        en: 'General',
+        ja: '一般ゴミ'
+      }
+    };
+    return categories[type as keyof typeof categories]?.[language] || categories['plastic-bottle'][language];
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      const detectedType = detectWasteType(file.name);
+      setWasteType(detectedType);
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageData = e.target?.result as string;
         setAnalysisImage(imageData);
-        
+
         // Add to recent searches
         const newItem: RecentItem = {
           id: Date.now(),
-          item: language === "ko" ? "플라스틱 페트병" : language === "en" ? "Plastic PET Bottle" : "プラスチックペットボトル",
-          category: language === "ko" ? "플라스틱류" : language === "en" ? "Plastics" : "プラスチック類",
+          item: getItemName(detectedType),
+          category: getCategoryName(detectedType),
           date: new Date().toLocaleDateString(),
           image: imageData
         };
@@ -151,6 +214,7 @@ export default function App() {
               image={analysisImage}
               language={language}
               userRegion={userRegion}
+              wasteType={wasteType}
               onBack={() => setAnalysisImage(null)}
               onComplete={handleAnalysisComplete}
             />
