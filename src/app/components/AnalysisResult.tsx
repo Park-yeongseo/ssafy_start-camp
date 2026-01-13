@@ -223,7 +223,7 @@ export function AnalysisResult({ image, language, userRegion, onBack, onComplete
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl shadow-lg border-2 border-primary/30 p-6 mb-6">
             <div className="flex items-center gap-4">
               <img
-                src="/bachuri.png"
+                src="bachuri.png"
                 alt="배추리"
                 className="w-16 h-16 object-cover"
               />

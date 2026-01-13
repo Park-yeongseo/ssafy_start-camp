@@ -707,7 +707,7 @@ export function NoticePage({ language, onBack }: NoticePageProps) {
               <div className="flex items-center gap-3">
                 {selectedNotice.author === "배추리" || selectedNotice.author === "Baechuri" || selectedNotice.author === "ベチュリ" ? (
                   <img
-                    src="/bachuri.png"
+                    src="bachuri.png"
                     alt="배추리"
                     className="w-12 h-12 rounded-full border-2 border-primary shadow-md object-cover"
                   />

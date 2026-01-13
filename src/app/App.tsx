@@ -167,7 +167,7 @@ export default function App() {
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <img
-                      src="/bachuri.png"
+                      src="bachuri.png"
                       alt="배추리"
                       className="w-20 h-20 object-cover"
                     />
