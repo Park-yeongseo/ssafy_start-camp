@@ -116,8 +116,22 @@ const analysisData = {
 
 export function AnalysisResult({ image, language, userRegion, onBack, onComplete }: AnalysisResultProps) {
   const [isCompleted, setIsCompleted] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
   const t = translations[language];
   const data = analysisData[language];
+
+  // Initialize completedSteps array when component mounts
+  if (completedSteps.length === 0) {
+    setCompletedSteps(new Array(data.steps.length).fill(false));
+  }
+
+  const allStepsCompleted = completedSteps.every(step => step);
+
+  const toggleStep = (index: number) => {
+    const newCompletedSteps = [...completedSteps];
+    newCompletedSteps[index] = !newCompletedSteps[index];
+    setCompletedSteps(newCompletedSteps);
+  };
 
   const handleComplete = () => {
     setIsCompleted(true);
@@ -205,6 +219,25 @@ export function AnalysisResult({ image, language, userRegion, onBack, onComplete
             </div>
           )}
 
+          {/* Baechuri Guide */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl shadow-lg border-2 border-primary/30 p-6 mb-6">
+            <div className="flex items-center gap-4">
+              <img
+                src="/bachuri.png"
+                alt="배추리"
+                className="w-16 h-16 object-cover"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-primary mb-1">
+                  {language === "ko" ? "배추리의 분리배출 가이드" : language === "en" ? "Baechuri's Disposal Guide" : "ベチュリの分別ガイド"}
+                </p>
+                <p className="text-sm text-gray-700">
+                  {language === "ko" ? "안녕하세요! 제가 단계별로 안내해드릴게요 🌱" : language === "en" ? "Hello! I'll guide you step by step 🌱" : "こんにちは！ステップごとにご案内します 🌱"}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* How to Dispose */}
           <div className="bg-white rounded-3xl shadow-xl border-2 border-primary/20 p-8 mb-6">
             <div className="flex items-center gap-3 mb-6">
@@ -213,36 +246,63 @@ export function AnalysisResult({ image, language, userRegion, onBack, onComplete
               </div>
               <h3 className="text-xl font-bold">{t.howToDispose}</h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {data.steps.map((step, index) => (
-                <div key={index} className="flex gap-4 group">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center text-base font-bold shadow-lg group-hover:scale-110 transition-transform">
-                    {index + 1}
+                <button
+                  key={index}
+                  onClick={() => toggleStep(index)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 group ${
+                    completedSteps[index]
+                      ? "bg-gray-100 border-gray-300 hover:bg-gray-150"
+                      : "bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20 hover:border-primary/40 hover:shadow-md"
+                  }`}
+                >
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-base font-bold shadow-md transition-all ${
+                    completedSteps[index]
+                      ? "bg-gray-400 text-white"
+                      : "bg-gradient-to-br from-primary to-secondary text-white group-hover:scale-110"
+                  }`}>
+                    {completedSteps[index] ? "✓" : index + 1}
                   </div>
-                  <p className="flex-1 pt-2 font-medium text-foreground">{step}</p>
-                </div>
+                  <p className={`flex-1 text-left font-medium transition-all ${
+                    completedSteps[index]
+                      ? "text-gray-400 line-through"
+                      : "text-foreground"
+                  }`}>
+                    {step}
+                  </p>
+                </button>
               ))}
             </div>
           </div>
 
           {/* Tips */}
-          <div className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-3xl border-2 border-accent/30 p-8 mb-8 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-accent to-primary p-3 rounded-2xl shadow-lg">
-                <AlertCircle className="w-7 h-7 text-white" />
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl border-3 border-amber-300 p-8 mb-8 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-amber-200">
+              <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-4 rounded-2xl shadow-lg animate-pulse">
+                <AlertCircle className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-accent-foreground">{t.tips}</h3>
+              <h3 className="text-2xl font-bold text-amber-900">{t.tips}</h3>
             </div>
-            <ul className="space-y-4">
+            <div className="space-y-4">
               {data.tips.map((tip, index) => (
-                <li key={index} className="flex gap-4 group">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                    <span className="text-2xl">💡</span>
+                <div key={index} className="bg-white rounded-2xl p-5 shadow-md border-2 border-amber-200 hover:shadow-lg hover:border-amber-300 transition-all">
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                      <span className="text-3xl">💡</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                          TIP {index + 1}
+                        </span>
+                      </div>
+                      <p className="text-base font-medium text-gray-800 leading-relaxed">{tip}</p>
+                    </div>
                   </div>
-                  <span className="flex-1 text-base font-medium pt-2">{tip}</span>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -256,11 +316,13 @@ export function AnalysisResult({ image, language, userRegion, onBack, onComplete
             </button>
             <button
               onClick={handleComplete}
-              disabled={isCompleted}
+              disabled={isCompleted || !allStepsCompleted}
               className={`flex-1 py-5 rounded-3xl transition-all flex items-center justify-center gap-3 font-bold text-lg border-2 ${
                 isCompleted
                   ? "bg-gradient-to-r from-green-400 to-green-600 text-white border-green-500 shadow-xl"
-                  : "bg-gradient-to-r from-primary to-secondary text-white border-primary/30 hover:shadow-xl hover:-translate-y-1"
+                  : allStepsCompleted
+                  ? "bg-gradient-to-r from-primary to-secondary text-white border-primary/30 hover:shadow-xl hover:-translate-y-1"
+                  : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed opacity-50"
               }`}
             >
               <CheckCircle2 className="w-6 h-6" />

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Menu, User, Globe, Camera, Clock, ChevronRight } from "lucide-react";
+import { Menu, User, Globe, Camera, Clock, ChevronRight, MapPin } from "lucide-react";
 import { Sidebar } from "./components/Sidebar";
 import { MyPage } from "./components/MyPage";
 import { AnalysisResult } from "./components/AnalysisResult";
@@ -65,6 +65,7 @@ export default function App() {
   const [analysisImage, setAnalysisImage] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const [userRegion, setUserRegion] = useState("강남구");
   const [recentSearches, setRecentSearches] = useState<RecentItem[]>([]);
   const [showAllRecent, setShowAllRecent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -128,8 +129,10 @@ export default function App() {
           <MyPage
             language={language}
             userName={userName}
+            userRegion={userRegion}
             isLoggedIn={isLoggedIn}
             onBack={() => setCurrentPage("main")}
+            onRegionChange={(region) => setUserRegion(region)}
             onLogout={() => {
               setIsLoggedIn(false);
               setUserName("");
@@ -147,7 +150,7 @@ export default function App() {
             <AnalysisResult
               image={analysisImage}
               language={language}
-              userRegion={userName ? "강남구" : ""}
+              userRegion={userRegion}
               onBack={() => setAnalysisImage(null)}
               onComplete={handleAnalysisComplete}
             />
@@ -156,10 +159,30 @@ export default function App() {
         return (
           <div className="flex-1 flex flex-col overflow-auto">
             {/* Greeting Banner */}
-            <div className="bg-gradient-to-r from-primary via-secondary to-accent p-6 text-white">
-              <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold mb-1">{t.greeting}</h2>
-                <p className="text-sm opacity-90">{t.tagline}</p>
+            <div className="bg-gradient-to-r from-primary via-secondary to-accent p-6 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 opacity-10">
+                <div className="text-white text-[200px]">♻️</div>
+              </div>
+              <div className="max-w-2xl mx-auto relative z-10">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src="/bachuri.png"
+                      alt="배추리"
+                      className="w-20 h-20 object-cover"
+                    />
+                    <div>
+                      <h2 className="text-2xl font-bold mb-1">{t.greeting}</h2>
+                      <p className="text-sm opacity-90">{t.tagline}</p>
+                    </div>
+                  </div>
+                  {userRegion && (
+                    <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-lg">
+                      <MapPin className="w-5 h-5" />
+                      <span className="font-bold text-sm">{userRegion}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

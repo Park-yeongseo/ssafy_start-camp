@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Send, User, Search, Plus, Users, MessageCircle } from "lucide-react";
+import { ArrowLeft, Send, User, Search, Plus, Users, MessageCircle, Languages } from "lucide-react";
 
 type Language = "ko" | "en" | "ja";
 
@@ -24,6 +24,12 @@ interface Message {
   text: string;
   time: string;
   isOwn: boolean;
+  originalLang?: "ko" | "en" | "ja";
+  translations?: {
+    ko: string;
+    en: string;
+    ja: string;
+  };
 }
 
 const translations = {
@@ -40,7 +46,9 @@ const translations = {
     roomName: "채팅방 이름",
     roomDesc: "채팅방 설명",
     create: "만들기",
-    cancel: "취소"
+    cancel: "취소",
+    translate: "번역",
+    translated: "[번역됨]"
   },
   en: {
     title: "Community",
@@ -55,7 +63,9 @@ const translations = {
     roomName: "Room Name",
     roomDesc: "Room Description",
     create: "Create",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    translate: "Translate",
+    translated: "[Translated]"
   },
   ja: {
     title: "コミュニティ",
@@ -70,7 +80,9 @@ const translations = {
     roomName: "ルーム名",
     roomDesc: "ルーム説明",
     create: "作成",
-    cancel: "キャンセル"
+    cancel: "キャンセル",
+    translate: "翻訳",
+    translated: "[翻訳済み]"
   }
 };
 
@@ -124,9 +136,353 @@ const initialRooms: ChatRoom[] = [
 
 const initialMessages: Record<number, Message[]> = {
   1: [
-    { id: 1, user: "김지민", text: "안녕하세요! 분리수거 처음 해보는데 너무 유용하네요", time: "10:23", isOwn: false },
-    { id: 2, user: "John", text: "This app is amazing! Very helpful for foreigners", time: "10:25", isOwn: false },
-    { id: 3, user: "박서준", text: "페트병 라벨 제거하는 거 몰랐는데 덕분에 알게 됐어요!", time: "10:30", isOwn: false }
+    {
+      id: 1,
+      user: "김지민",
+      text: "안녕하세요! 분리수거 처음 해보는데 너무 유용하네요",
+      time: "10:23",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 2,
+      user: "John",
+      text: "This app is amazing! Very helpful for foreigners",
+      time: "10:25",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "이 앱 정말 대단해요! 외국인들에게 너무 유용해요",
+        en: "This app is amazing! Very helpful for foreigners",
+        ja: "このアプリは素晴らしい！外国人にとても役立ちます"
+      }
+    },
+    {
+      id: 3,
+      user: "박서준",
+      text: "페트병 라벨 제거하는 거 몰랐는데 덕분에 알게 됐어요!",
+      time: "10:30",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 4,
+      user: "Sara",
+      text: "Can someone explain how to separate plastic bags?",
+      time: "10:35",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "비닐봉지를 어떻게 분리하는지 설명해주실 수 있나요?",
+        en: "Can someone explain how to separate plastic bags?",
+        ja: "ビニール袋の分別方法を教えていただけますか？"
+      }
+    },
+    {
+      id: 5,
+      user: "이수진",
+      text: "비닐은 깨끗하게 씻어서 말린 다음 투명 비닐봉투에 넣어서 배출하면 됩니다!",
+      time: "10:37",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 6,
+      user: "Sara",
+      text: "Thank you so much! That's very clear 😊",
+      time: "10:38",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "정말 감사합니다! 너무 명확해요 😊",
+        en: "Thank you so much! That's very clear 😊",
+        ja: "本当にありがとうございます！とても分かりやすいです 😊"
+      }
+    },
+    {
+      id: 7,
+      user: "최민호",
+      text: "저도 궁금한 게 있는데, 스티로폼은 어떻게 버려야 하나요?",
+      time: "10:42",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 8,
+      user: "田中さくら",
+      text: "スチロールは綺麗に洗って乾かしてから出してください",
+      time: "10:44",
+      isOwn: false,
+      originalLang: "ja",
+      translations: {
+        ko: "스티로폼은 깨끗이 씻어서 말린 후 배출해주세요",
+        en: "Please wash and dry the styrofoam before disposal",
+        ja: "スチロールは綺麗に洗って乾かしてから出してください"
+      }
+    }
+  ],
+  2: [
+    {
+      id: 1,
+      user: "Michael",
+      text: "Hello everyone! I'm new to Korea and confused about recycling",
+      time: "09:15",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "안녕하세요 여러분! 한국에 처음 와서 재활용이 헷갈려요",
+        en: "Hello everyone! I'm new to Korea and confused about recycling",
+        ja: "皆さんこんにちは！韓国に来たばかりでリサイクルが分かりません"
+      }
+    },
+    {
+      id: 2,
+      user: "Emma",
+      text: "Don't worry! This community is here to help. What do you need?",
+      time: "09:17",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "걱정 마세요! 이 커뮤니티가 도와드릴게요. 무엇이 필요하신가요?",
+        en: "Don't worry! This community is here to help. What do you need?",
+        ja: "心配しないで！このコミュニティが助けます。何が必要ですか？"
+      }
+    },
+    {
+      id: 3,
+      user: "Michael",
+      text: "I have pizza boxes and soda bottles. How should I dispose them?",
+      time: "09:20",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "피자 박스와 소다 병이 있어요. 어떻게 버려야 하나요?",
+        en: "I have pizza boxes and soda bottles. How should I dispose them?",
+        ja: "ピザの箱とソーダのボトルがあります。どう処分すればいいですか？"
+      }
+    },
+    {
+      id: 4,
+      user: "김민지",
+      text: "피자박스는 기름기 없으면 종이류, 있으면 일반쓰레기예요. 페트병은 라벨 제거하고 압축해서 배출하세요!",
+      time: "09:22",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 5,
+      user: "田中健",
+      text: "ペットボトルのキャップも分けて捨ててくださいね",
+      time: "09:25",
+      isOwn: false,
+      originalLang: "ja",
+      translations: {
+        ko: "페트병 뚜껑도 따로 분리해서 버려주세요",
+        en: "Please also separate the plastic bottle caps",
+        ja: "ペットボトルのキャップも分けて捨ててくださいね"
+      }
+    },
+    {
+      id: 6,
+      user: "Michael",
+      text: "Wow, this is very detailed! Thank you everyone! 🙏",
+      time: "09:27",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "와, 정말 자세하네요! 모두 감사합니다! 🙏",
+        en: "Wow, this is very detailed! Thank you everyone! 🙏",
+        ja: "すごく詳しいですね！皆さんありがとうございます！🙏"
+      }
+    }
+  ],
+  3: [
+    {
+      id: 1,
+      user: "강남주민A",
+      text: "이번주 수요일 재활용 수거 맞죠?",
+      time: "14:20",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 2,
+      user: "이지은",
+      text: "네 맞아요! 수요일 저녁 7시~자정 사이 배출하시면 됩니다",
+      time: "14:22",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 3,
+      user: "박정수",
+      text: "강남구는 RFID 음식물 종량기 쓰시는 분들 많으신가요?",
+      time: "14:25",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 4,
+      user: "김소현",
+      text: "저희 아파트는 전부 RFID로 바꼈어요. 처음엔 불편했는데 이제 익숙해졌네요",
+      time: "14:27",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 5,
+      user: "David",
+      text: "The RFID system in Gangnam is really convenient!",
+      time: "14:30",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "강남의 RFID 시스템 정말 편리해요!",
+        en: "The RFID system in Gangnam is really convenient!",
+        ja: "江南のRFIDシステムは本当に便利です！"
+      }
+    },
+    {
+      id: 6,
+      user: "윤서아",
+      text: "대형폐기물은 어플로 신고하면 되는 거 알고 계시죠?",
+      time: "14:33",
+      isOwn: false,
+      originalLang: "ko"
+    }
+  ],
+  4: [
+    {
+      id: 1,
+      user: "에코지민",
+      text: "오늘도 장 볼 때 장바구니 챙겼어요! 💚",
+      time: "11:30",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 2,
+      user: "그린수현",
+      text: "저는 텀블러 2개 가지고 다녀요. 하나는 뜨거운 음료용, 하나는 차가운 음료용!",
+      time: "11:35",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 3,
+      user: "Lisa",
+      text: "I've been using reusable straws for 6 months now! No more plastic ✨",
+      time: "11:40",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "6개월째 재사용 빨대 쓰고 있어요! 플라스틱은 이제 안녕 ✨",
+        en: "I've been using reusable straws for 6 months now! No more plastic ✨",
+        ja: "6ヶ月間再利用できるストローを使っています！プラスチックはもう使いません ✨"
+      }
+    },
+    {
+      id: 4,
+      user: "제로웨이스터",
+      text: "요즘 제로웨이스트 샵이 많이 생겨서 좋아요. 세제도 리필해서 쓰고 있어요",
+      time: "11:45",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 5,
+      user: "山田花子",
+      text: "私も固形シャンプー使ってます！プラスチックボトル減らせます",
+      time: "11:50",
+      isOwn: false,
+      originalLang: "ja",
+      translations: {
+        ko: "저도 고체 샴푸 쓰고 있어요! 플라스틱 병을 줄일 수 있어요",
+        en: "I'm using solid shampoo too! It reduces plastic bottles",
+        ja: "私も固形シャンプー使ってます！プラスチックボトル減らせます"
+      }
+    },
+    {
+      id: 6,
+      user: "에코민준",
+      text: "다들 대단하시네요! 저도 더 열심히 실천해야겠어요 💪",
+      time: "11:55",
+      isOwn: false,
+      originalLang: "ko"
+    }
+  ],
+  5: [
+    {
+      id: 1,
+      user: "꿀팁왕",
+      text: "우유팩은 일반 종이랑 따로 모아서 배출해야 한다는 거 알고 계셨나요?",
+      time: "16:10",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 2,
+      user: "재활용마스터",
+      text: "우유팩은 펄프 품질이 좋아서 화장지로 재활용된대요!",
+      time: "16:12",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 3,
+      user: "Anna",
+      text: "Really? I didn't know milk cartons are that valuable!",
+      time: "16:15",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "정말요? 우유팩이 그렇게 가치 있는 줄 몰랐어요!",
+        en: "Really? I didn't know milk cartons are that valuable!",
+        ja: "本当？牛乳パックがそんなに価値があるなんて知りませんでした！"
+      }
+    },
+    {
+      id: 4,
+      user: "정보통",
+      text: "계란판도 재활용 가능한 거 아시나요? 플라스틱 계란판은 플라스틱류, 종이 계란판은 종이류로!",
+      time: "16:18",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 5,
+      user: "佐藤太郎",
+      text: "アルミ缶とスチール缶も分けて捨てた方がいいですよ",
+      time: "16:22",
+      isOwn: false,
+      originalLang: "ja",
+      translations: {
+        ko: "알루미늄 캔과 철 캔도 분리해서 버리는 게 좋아요",
+        en: "It's better to separate aluminum cans and steel cans",
+        ja: "アルミ缶とスチール缶も分けて捨てた方がいいですよ"
+      }
+    },
+    {
+      id: 6,
+      user: "분리수거Pro",
+      text: "캔은 자석으로 붙으면 철, 안 붙으면 알루미늄이에요. 꿀팁!",
+      time: "16:25",
+      isOwn: false,
+      originalLang: "ko"
+    },
+    {
+      id: 7,
+      user: "Tom",
+      text: "That's a brilliant tip! Thanks for sharing 👍",
+      time: "16:27",
+      isOwn: false,
+      originalLang: "en",
+      translations: {
+        ko: "정말 훌륭한 팁이네요! 공유해주셔서 감사합니다 👍",
+        en: "That's a brilliant tip! Thanks for sharing 👍",
+        ja: "素晴らしいヒントですね！共有してくれてありがとう 👍"
+      }
+    }
   ]
 };
 
@@ -139,6 +495,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomDesc, setNewRoomDesc] = useState("");
+  const [translatedMessages, setTranslatedMessages] = useState<Set<number>>(new Set());
   const t = translations[language];
 
   const filteredRooms = chatRooms.filter(
@@ -150,6 +507,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
   const handleJoinRoom = (room: ChatRoom) => {
     setSelectedRoom(room);
     setMessages(initialMessages[room.id] || []);
+    setTranslatedMessages(new Set());
     setView("chat");
   };
 
@@ -166,6 +524,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
         hour12: false,
       }),
       isOwn: true,
+      originalLang: language,
     };
 
     setMessages([...messages, newMessage]);
@@ -192,6 +551,27 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
     alert(language === "ko" ? "채팅방이 생성되었습니다! 🎉" : language === "en" ? "Room created! 🎉" : "ルームが作成されました！ 🎉");
   };
 
+  const handleTranslate = (messageId: number) => {
+    const newTranslated = new Set(translatedMessages);
+    if (newTranslated.has(messageId)) {
+      newTranslated.delete(messageId);
+    } else {
+      newTranslated.add(messageId);
+    }
+    setTranslatedMessages(newTranslated);
+  };
+
+  const getDisplayText = (message: Message): string => {
+    if (translatedMessages.has(message.id) && message.translations) {
+      return message.translations[language];
+    }
+    return message.text;
+  };
+
+  const needsTranslation = (message: Message): boolean => {
+    return message.originalLang !== undefined && message.originalLang !== language && message.translations !== undefined;
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSend();
@@ -203,17 +583,17 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
     return (
       <div className="flex-1 flex flex-col bg-background">
         {/* Header */}
-        <div className="bg-primary text-primary-foreground px-4 py-4 flex items-center gap-4 shadow-md">
+        <div className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-4 py-4 flex items-center gap-4 shadow-md">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl flex-1">{t.title}</h1>
+          <h1 className="text-xl flex-1 font-bold">{t.title}</h1>
           <button
             onClick={() => setView("create")}
-            className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <Plus className="w-6 h-6" />
           </button>
@@ -236,7 +616,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
         {/* Room List */}
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-2xl mx-auto">
-            <h2 className="mb-4 flex items-center gap-2">
+            <h2 className="mb-4 flex items-center gap-2 font-bold text-lg">
               <MessageCircle className="w-5 h-5 text-primary" />
               {t.roomList}
             </h2>
@@ -244,18 +624,18 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
               {filteredRooms.map((room) => (
                 <div
                   key={room.id}
-                  className="bg-white rounded-2xl shadow-sm border border-border p-4 hover:shadow-md transition-shadow"
+                  className="bg-white rounded-2xl shadow-md border-2 border-primary/10 p-5 hover:shadow-xl hover:border-primary/30 transition-all"
                 >
                   <div className="flex items-start gap-4">
                     <div className="text-4xl">{room.emoji}</div>
                     <div className="flex-1">
-                      <h3 className="mb-1">{room.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
+                      <h3 className="mb-1 font-bold text-lg">{room.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
                         {room.description}
                       </p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 font-medium">
                             <Users className="w-4 h-4" />
                             {room.members} {t.members}
                           </span>
@@ -263,13 +643,13 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
                         </div>
                         <button
                           onClick={() => handleJoinRoom(room)}
-                          className="bg-primary text-primary-foreground px-4 py-2 rounded-full hover:bg-primary/90 transition-colors text-sm"
+                          className="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-full hover:shadow-lg transition-all text-sm font-bold"
                         >
                           {t.join}
                         </button>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 italic">
-                        "{room.lastMessage}"
+                      <p className="text-sm text-muted-foreground mt-3 italic bg-primary/5 p-3 rounded-xl">
+                        💬 "{room.lastMessage}"
                       </p>
                     </div>
                   </div>
@@ -287,22 +667,22 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
     return (
       <div className="flex-1 flex flex-col bg-background">
         {/* Header */}
-        <div className="bg-primary text-primary-foreground px-4 py-4 flex items-center gap-4 shadow-md">
+        <div className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-4 py-4 flex items-center gap-4 shadow-md">
           <button
             onClick={() => setView("list")}
-            className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl">{t.createRoom}</h1>
+          <h1 className="text-xl font-bold">{t.createRoom}</h1>
         </div>
 
         {/* Create Form */}
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-sm border border-border p-6">
+            <div className="bg-white rounded-2xl shadow-lg border-2 border-primary/10 p-6">
               <div className="mb-6">
-                <label className="block mb-2 text-sm">{t.roomName}</label>
+                <label className="block mb-2 text-sm font-bold">{t.roomName}</label>
                 <input
                   type="text"
                   value={newRoomName}
@@ -313,7 +693,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
               </div>
 
               <div className="mb-6">
-                <label className="block mb-2 text-sm">{t.roomDesc}</label>
+                <label className="block mb-2 text-sm font-bold">{t.roomDesc}</label>
                 <textarea
                   value={newRoomDesc}
                   onChange={(e) => setNewRoomDesc(e.target.value)}
@@ -326,13 +706,13 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setView("list")}
-                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition-colors font-bold"
                 >
                   {t.cancel}
                 </button>
                 <button
                   onClick={handleCreateRoom}
-                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl hover:bg-primary/90 transition-colors"
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl hover:shadow-lg transition-all font-bold"
                 >
                   ✨ {t.create}
                 </button>
@@ -348,18 +728,18 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
   return (
     <div className="flex-1 flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-4 py-4 shadow-md">
+      <div className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-4 py-4 shadow-md">
         <button
           onClick={() => setView("list")}
-          className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors mb-2"
+          className="p-2 hover:bg-white/20 rounded-lg transition-colors mb-2"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div className="flex items-center gap-3">
           <span className="text-3xl">{selectedRoom?.emoji}</span>
           <div className="flex-1">
-            <h1 className="text-xl">{selectedRoom?.name}</h1>
-            <p className="text-sm text-primary-foreground/80 flex items-center gap-1">
+            <h1 className="text-xl font-bold">{selectedRoom?.name}</h1>
+            <p className="text-sm text-white/80 flex items-center gap-1">
               <Users className="w-4 h-4" />
               {selectedRoom?.members} {t.members}
             </p>
@@ -368,7 +748,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-auto p-4 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 bg-gradient-to-b from-primary/5 to-background">
         <div className="max-w-2xl mx-auto space-y-4">
           {messages.map((message) => (
             <div
@@ -377,13 +757,11 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
             >
               <div
                 className={`flex-shrink-0 w-10 h-10 rounded-full ${
-                  message.isOwn ? "bg-primary" : "bg-gray-300"
-                } flex items-center justify-center`}
+                  message.isOwn ? "bg-gradient-to-br from-primary to-secondary" : "bg-gradient-to-br from-gray-300 to-gray-400"
+                } flex items-center justify-center shadow-md`}
               >
                 <User
-                  className={`w-5 h-5 ${
-                    message.isOwn ? "text-white" : "text-gray-600"
-                  }`}
+                  className={`w-5 h-5 text-white`}
                 />
               </div>
               <div
@@ -392,7 +770,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
                 } max-w-[70%]`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm font-bold text-foreground">
                     {message.user}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -400,14 +778,28 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
                   </span>
                 </div>
                 <div
-                  className={`px-4 py-2 rounded-2xl ${
+                  className={`px-4 py-3 rounded-2xl shadow-md ${
                     message.isOwn
-                      ? "bg-primary text-white"
-                      : "bg-white border border-border"
+                      ? "bg-gradient-to-r from-primary to-secondary text-white"
+                      : "bg-white border-2 border-gray-200"
                   }`}
                 >
-                  <p className="text-sm">{message.text}</p>
+                  <p className="text-sm leading-relaxed">
+                    {translatedMessages.has(message.id) && (
+                      <span className="text-xs opacity-70 mr-1">{t.translated}</span>
+                    )}
+                    {getDisplayText(message)}
+                  </p>
                 </div>
+                {needsTranslation(message) && (
+                  <button
+                    onClick={() => handleTranslate(message.id)}
+                    className="mt-1 flex items-center gap-1 text-xs text-primary hover:text-secondary transition-colors px-2 py-1 rounded-full hover:bg-primary/10"
+                  >
+                    <Languages className="w-3 h-3" />
+                    <span className="font-medium">{t.translate}</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -415,7 +807,7 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-border p-4">
+      <div className="bg-white border-t-2 border-primary/10 p-4 shadow-lg">
         <div className="max-w-2xl mx-auto flex gap-2">
           <input
             type="text"
@@ -423,11 +815,11 @@ export function CommunityPage({ language, onBack }: CommunityPageProps) {
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t.messagePlaceholder}
-            className="flex-1 px-4 py-3 rounded-full border border-border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 px-4 py-3 rounded-full border-2 border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
           />
           <button
             onClick={handleSend}
-            className="bg-primary text-primary-foreground p-3 rounded-full hover:bg-primary/90 transition-colors"
+            className="bg-gradient-to-r from-primary to-secondary text-white p-3 rounded-full hover:shadow-lg transition-all"
           >
             <Send className="w-5 h-5" />
           </button>

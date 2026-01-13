@@ -6,8 +6,10 @@ type Language = "ko" | "en" | "ja";
 interface MyPageProps {
   language: Language;
   userName: string;
+  userRegion: string;
   isLoggedIn: boolean;
   onBack: () => void;
+  onRegionChange: (region: string) => void;
   onLogout: () => void;
 }
 
@@ -30,7 +32,9 @@ const translations = {
     save: "💾 저장하기",
     logout: "로그아웃",
     changePhoto: "사진 변경",
-    saveSuccess: "저장되었습니다! ✅"
+    saveSuccess: "저장되었습니다! ✅",
+    locating: "현재 위치를 탐색 중입니다...",
+    locationVerified: "인증이 완료되었습니다"
   },
   en: {
     title: "My Page",
@@ -50,7 +54,9 @@ const translations = {
     save: "💾 Save",
     logout: "Logout",
     changePhoto: "Change Photo",
-    saveSuccess: "Saved! ✅"
+    saveSuccess: "Saved! ✅",
+    locating: "Searching for current location...",
+    locationVerified: "Verification completed"
   },
   ja: {
     title: "マイページ",
@@ -70,7 +76,9 @@ const translations = {
     save: "💾 保存",
     logout: "ログアウト",
     changePhoto: "写真を変更",
-    saveSuccess: "保存しました！ ✅"
+    saveSuccess: "保存しました！ ✅",
+    locating: "現在地を検索中です...",
+    locationVerified: "認証が完了しました"
   }
 };
 
@@ -82,13 +90,14 @@ const districts = [
   "용산구", "은평구", "종로구", "중구", "중랑구"
 ];
 
-export function MyPage({ language, userName, isLoggedIn, onBack, onLogout }: MyPageProps) {
+export function MyPage({ language, userName, userRegion, isLoggedIn, onBack, onRegionChange, onLogout }: MyPageProps) {
   const [name, setName] = useState(userName);
-  const [region, setRegion] = useState("");
+  const [region, setRegion] = useState(userRegion);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [notifRecycling, setNotifRecycling] = useState(true);
   const [notifNews, setNotifNews] = useState(true);
   const [notifCommunity, setNotifCommunity] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const t = translations[language];
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +108,20 @@ export function MyPage({ language, userName, isLoggedIn, onBack, onLogout }: MyP
         setProfileImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRegionChange = (newRegion: string) => {
+    setRegion(newRegion);
+    if (newRegion) {
+      setIsLocating(true);
+      setTimeout(() => {
+        setIsLocating(false);
+        setTimeout(() => {
+          alert(t.locationVerified);
+          onRegionChange(newRegion);
+        }, 100);
+      }, 2000);
     }
   };
 
@@ -170,8 +193,9 @@ export function MyPage({ language, userName, isLoggedIn, onBack, onLogout }: MyP
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <select
                   value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-input-background focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+                  onChange={(e) => handleRegionChange(e.target.value)}
+                  disabled={isLocating}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-input-background focus:outline-none focus:ring-2 focus:ring-primary appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">{t.regionPlaceholder}</option>
                   {districts.map((district) => (
@@ -181,6 +205,12 @@ export function MyPage({ language, userName, isLoggedIn, onBack, onLogout }: MyP
                   ))}
                 </select>
               </div>
+              {isLocating && (
+                <div className="mt-3 flex items-center gap-2 text-primary animate-pulse">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium">{t.locating}</span>
+                </div>
+              )}
             </div>
           </div>
 
